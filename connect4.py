@@ -1,154 +1,120 @@
-import pygame, sys, math, numpy
+import pygame, time, random
+import fourinarow as cvp, pvp5x6, pvp6x7, pvp7x8
 
-RED = (255,0,0)
-GREEN = (0,200,0)
-BLUE = (0,0,255)
-YELLOW = (255,255,0)
-BLACK = (0,0,0)
-
-ROW_COUNT = 6
-COLUMN_COUNT = 7
-
-def create_board():
-    board = numpy.zeros((ROW_COUNT, COLUMN_COUNT))
-    return board
-
-def drop_piece(board, row, col, piece):
-    board[row][col] = piece
-
-def is_valid_location(board, col):
-    if col >= COLUMN_COUNT and col <= 0:
-        return 0
-    return board[ROW_COUNT - 1][col] == 0
-
-def get_next_pos(board, col):
-    for r in range(ROW_COUNT):
-        if board[r][col] == 0:
-            return r
-
-def print_board(board):
-    print(numpy.flip(board, 0))
-
-def win(board, piece):
-    #check horizontally
-    for c in range(COLUMN_COUNT-3):
-        for r in range(ROW_COUNT):
-            if board[r][c] == board[r][c+1] == board[r][c+2] == board[r][c+3] == piece:
-                return True
-    
-    #check vetically
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT-3):
-            if board[r][c] == board[r+1][c] == board[r+2][c] == board[r+3][c] == piece:
-                return True
-
-    #check diagonally
-    for c in range(COLUMN_COUNT-3):
-        for r in range(ROW_COUNT-3):
-            if board[r][c] == board[r+1][c+1] == board[r+2][c+2] == board[r+3][c+3] == piece:
-                return True
-
-    for c in range(COLUMN_COUNT-3):
-        for r in range(3, ROW_COUNT):
-            if board[r][c] == board[r-1][c+1] == board[r-2][c+2] == board[r-3][c+3] == piece:
-                return True
-
-def draw_board(board):
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
-            pygame.draw.rect(screen, BLUE, ((c+1)*SQSIZE, (r+1)*SQSIZE, SQSIZE, SQSIZE))
-            pygame.draw.circle(screen, BLACK, (int((c+1)*SQSIZE + SQSIZE/2), int((r+1)*SQSIZE + SQSIZE/2)), RADIUS)
-            
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
-            if board[r][c] == 1:
-                pygame.draw.circle(screen, RED, (int((c+1)*SQSIZE + SQSIZE/2), height-int((r+1)*SQSIZE + SQSIZE/2)), RADIUS)
-            elif board[r][c] == 2:
-                pygame.draw.circle(screen, YELLOW, (int((c+1)*SQSIZE + SQSIZE/2), height-int((r+1)*SQSIZE + SQSIZE/2)), RADIUS)
-                
-    pygame.display.update()
-        
-
-board = create_board()
-game_over = False
-turn = 0
- 
 pygame.init()
+display_width = 800
+display_height = 600
+board_width = 5
+board_height = 5
+gameDisplay = pygame.display.set_mode((display_width,display_height))
+black = (0,0,0)
+white = (255,255,255)
+red = (200,0,0)
+blue = (0,0,200)
+green = (0,200,0)
+bright_red = (255,0,0)
+bright_green = (0,255,0)
+yellow = (244,252,25)
+bright_yellow = (179,183,69)
 
-SQSIZE = 100
-RADIUS = int(SQSIZE/2 - 5)
 
-width = (COLUMN_COUNT+2) * SQSIZE
-height = (ROW_COUNT+2) * SQSIZE
+pygame.display.set_caption('Connect4')
+clock = pygame.time.Clock()
+img = pygame.image.load('connect_4.png')
+#boardelement = pygame.image.load('boardelement2.png')
+#boardelement = pygame.transform.scale(boardelement,(100,100))
+#backgroundimg = pygame.image.load('backimg.png')
+#backgroundimg = pygame.transform.scale(backgroundimg,(800,600))
 
-size = (width, height)
 
-screen = pygame.display.set_mode(size)
-draw_board(board)
-pygame.display.update()
+def text_objects(text,font,color):#function to get a rectangle to hold text 
+    textSurface = font.render(text,True,color)
+    return textSurface,textSurface.get_rect()
 
-font = pygame.font.SysFont("monospace", 75)
 
-while not game_over:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+def buttons(msg,xcoo,ycoo,w,h,ac,ic,font_size,action = None):#for displaying any button
+#Here last parameter represents action to be taken when button
+#is pressed and first parameter is the text to be displayed on the button
+    
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if xcoo < mouse[0] < xcoo + w and ycoo < mouse[1] < ycoo + h:
+        pygame.draw.rect(gameDisplay, ac, (xcoo,ycoo,w,h))
+        if click[0]== 1 and action == 'Play':
+            board_choice() #game starts after this call when user presses mouse left click
+        elif click[0] == 1 and action == 'Quit':#game quit
             pygame.quit()
-            sys.exit()
             quit()
-        if turn ==43:
-            tie=font.render("Tie",1,RED)
-            screen.blit(tie,(100,10))
-            game_over=True
+        elif click[0] == 1 and action =='BackMenu':
+            intro_game()
+        elif click[0] == 1 and action=='6 X 7':
+            pvp6x7.main()
+        elif click[0] == 1 and action == '5 X 6':
+            pvp5x6.main()
+        elif click[0] == 1 and action == '7 X 8':
+            pvp7x8.main()
+    else:
+        pygame.draw.rect(gameDisplay, ic,(xcoo,ycoo,w,h))
+
+    smalltext = pygame.font.Font('freesansbold.ttf',font_size)
+    textSurf, textRect = text_objects(msg,smalltext,blue)
+    textRect.center = ((xcoo+(w/2)),(ycoo+(h/2)))
+    gameDisplay.blit(textSurf,textRect)
+
+def intro_img(x,y,imgname):#to display image
+    gameDisplay.blit(imgname,(x,y))
+    
+def intro_game():#intro page of game
+    intro = True
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        gameDisplay.fill(white)
+        
+        intro_img(250,0,img)#displaying image at top center
+        
+        text_name = pygame.font.Font('freesansbold.ttf',115)
+        TextSurf,TextRect = text_objects('Connect4',text_name,blue)
+
+        TextRect.center = ((display_width/2),(display_height/2))#position where text has to be displayed
+        gameDisplay.blit(TextSurf , TextRect)
+        buttons('Connect',150,450,200,50,green,bright_green,30,'Play')#for displaying buttons of play and quit 
+        buttons('Quit',550,450,200,50,red,bright_red,30,'Quit')
+        #Here last parameter represents action to be taken when button
+        #is pressed and first parameter is the text to be displayed on the button
+        pygame.display.update()
+        clock.tick(30)
+        
+def board_choice():
+    gameDisplay.fill(white)
+    intro = True
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        gameDisplay.fill(white)
+        text_name = pygame.font.Font('freesansbold.ttf',55)
+        TextSurf,TextRect = text_objects('Choose the Board Size',text_name,blue)
+        TextRect.center = ((display_width/2),(display_height/2))
+        gameDisplay.blit(TextSurf , TextRect)
 
         
-        if event.type == pygame.MOUSEMOTION:
-            if 700 >= event.pos[1] >= 100 and 100 <= event.pos[1] <= 800:
-                pygame.draw.rect(screen, BLACK, (0, 0, width, SQSIZE))#
-                posx = event.pos[0]
-                if turn % 2== 0:
-                    pygame.draw.circle(screen, RED, (posx, int(SQSIZE/2)), RADIUS)
-                else:
-                    pygame.draw.circle(screen, YELLOW, (posx, int(SQSIZE/2)), RADIUS)
-            pygame.display.update()
+        buttons('7 X 8',50,350,200,50,green,bright_green,30,'7 X 8')
+        buttons('6 X 7',300,350,200,50,green,bright_green,30,'6 X 7')
+        buttons('5 X 6',550,350,200,50,green,bright_green,30,'5 X 6')
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.draw.rect(screen, BLACK, (0, 0, width, SQSIZE))
-            if 100 <= event.pos[1] <= 700 and 100 <= event.pos[0] <= 800:
-                if turn % 2 == 0:
-                    posx = event.pos[0]
-                    col = int(math.floor(posx/SQSIZE)) - 1
 
-                    if is_valid_location(board, col):
-                        row = get_next_pos(board, col)
-                        drop_piece(board, row, col, 1)
-                        turn += 1
+        pygame.display.update()
+        clock.tick(30)
+        
+def game_func(noofrows,noofcols): #logic of game to be included here 
+    yed = None #
+        
+        
 
-                        if win(board, 1):
-                            label = font.render("Player 1 Wins!!", 1, RED)
-                            screen.blit(label, (100, 10))
-                            game_over = True
-
-                else:
-                    posx = event.pos[0]
-                    col = int(math.floor(posx/SQSIZE)) - 1
-
-                    if is_valid_location(board, col):
-                        row = get_next_pos(board, col)
-                        drop_piece(board, row, col, 2)
-                        turn += 1
-
-                        if win(board, 2):
-                            label = font.render("Player 2 Wins!!", 1, YELLOW)
-                            screen.blit(label, (100, 10))
-                            game_over = True
-                            
-            #print_board(board)
-            draw_board(board)
-
-            if game_over:
-                pygame.time.wait(2000)
-
+intro_game()#call to game intro page  
 pygame.quit()
-sys.exit()
 quit()
