@@ -121,7 +121,7 @@ def montecarlomove(board)
 
 	board1 = copy.deepcopy(board)
 
-	for evalcol in board_width:
+	for evalcol in range(board_width):
 		
 		if lowest_space(board, evalcol) == -1
 			possible_moves[evalcol] = -100000
@@ -137,10 +137,10 @@ def montecarlomove(board)
 
 			sum1 = 0
 			board2 = copy.deepcopy(board)
-			for games in no_of_games:
+			for games in range(no_of_games):
 				stage = 0
 				
-				for stage in depth_for_montecarlo:
+				for stage in range(depth_for_montecarlo):
 					if is_full(board):
 						break
 					
@@ -181,11 +181,11 @@ def montecarlomove(board)
 	maxcol = 0
 	maxvalue = possible_moves[maxcol] 
 
-	for col in board_width:
+	for col in range(board_width):
 		if maxvalue < possible_moves[col]:
 			maxvalue = possible_moves[col]
 			maxcol = col
-
+	board = copy.deepcopy(board1)
 	return maxcol
 
 def currentmove_win(player, board, col, row)
