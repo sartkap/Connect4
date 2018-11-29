@@ -23,7 +23,7 @@ bgcolor = (150,200,150)
 human = 1
 computer = 2
 
-no_of_games = 1000      #for monte carlo    
+no_of_games = 10000      #for monte carlo    
 depth_for_montecarlo = 8    #for monte carlo
 
 
@@ -42,11 +42,16 @@ blacktoken_img = pygame.transform.smoothscale(blacktoken_img, (element_size, ele
 element_img = pygame.image.load('4row_board.png')
 element_img = pygame.transform.smoothscale(element_img, (element_size, element_size))
 
-human_winner_img = pygame.image.load('4row_humanwinner.png')
-computer_winner_img = pygame.image.load('4row_computerwinner.png')
+human_winner_img = pygame.image.load('image 1.png')
+human_winner_img = pygame.transform.smoothscale(human_winner_img, (340, 80))
+
+computer_winner_img = pygame.image.load('image 2.png')
+computer_winner_img = pygame.transform.smoothscale(computer_winner_img, (340, 80))
+
 tie_img = pygame.image.load('4row_tie.png')
+tie_img = pygame.transform.smoothscale(tie_img, (100, 80))
 winner_rect = human_winner_img.get_rect()
-winner_rect.center = (screen_width // 2, screen_height // 2)
+winner_rect.center = (screen_width // 2, screen_height // 10)
 
 help_img = pygame.image.load('4row_arrow.png')
 help_rect = help_img.get_rect()
@@ -54,9 +59,6 @@ help_rect.left = redtoken_rect.right + 10
 help_rect.centery = redtoken_rect.centery
 
 def main():
-    
-
-
     while True:
         game_play()
 
@@ -123,26 +125,26 @@ def montecarlomove(board):		##this is the monte carlo function
 
 	for evalcol in range(board_width):
 		
-		if lowest_space(board, evalcol) == -1:
+		if lowest_space(board1, evalcol) == -1:
 			possible_moves[evalcol] = -100000
 			continue
 
 		else:
-			lowestrow = lowest_space(board, evalcol)
-			board[evalcol][lowestrow] = 2
+			lowestrow = lowest_space(board1, evalcol)
+			board1[evalcol][lowestrow] = 2
 			#board2 = copy.deepcopy(board)
-			if currentmove_win(2 , board, evalcol, lowestrow):  ##if the comp wins after this move
+			if currentmove_win(2 , board1, evalcol, lowestrow):  ##if the comp wins after this move
 				possible_moves[evalcol] = 100000
 				continue
 
 			sum1 = 0
-			board2 = copy.deepcopy(board)	#storing the state of board after one move
+			board2 = copy.deepcopy(board1)	#storing the state of board after one move
 			
 			for games in range(no_of_games):
 				stage = 0
 				
 				for stage in range(depth_for_montecarlo):
-					if is_full(board):
+					if is_full(board2):
 						break
 					
 					else:
@@ -150,13 +152,13 @@ def montecarlomove(board):		##this is the monte carlo function
 							
 							
 							currcol = random.randint(0, board_width-1)
-							currrow = lowest_space(board, currcol)
+							currrow = lowest_space(board2, currcol)
 							while currrow == -1:		#### Check if board gets full
 								currcol = random.randint(0, board_width-1)
-								currrow = lowest_space(board, currcol)
-							board[currcol][currrow] = 2
+								currrow = lowest_space(board2, currcol)
+							board2[currcol][currrow] = 2
 
-							if currentmove_win(2 , board, currcol, currrow):  ##
+							if currentmove_win(2 , board2, currcol, currrow):  ##
 								sum1 += 1*(depth_for_montecarlo - stage)
 								break
 
@@ -164,20 +166,20 @@ def montecarlomove(board):		##this is the monte carlo function
 							
 							
 							currcol = random.randint(0, board_width-1)
-							currrow = lowest_space(board, currcol)
+							currrow = lowest_space(board2, currcol)
 							while currrow == -1:		#### Check if board gets full
 								currcol = random.randint(0,board_width-1)
-								currrow = lowest_space(board, currcol)
-							board[currcol][currrow] = 1
+								currrow = lowest_space(board2, currcol)
+							board2[currcol][currrow] = 1
 
-							if currentmove_win(1, board, currcol, currrow):  ##
+							if currentmove_win(1, board2, currcol, currrow):  ##
 								sum1 -= 1*(depth_for_montecarlo - stage)
 								break
 		
 				
-				board = copy.deepcopy(board2)
+				board2 = copy.deepcopy(board1)
 		possible_moves[evalcol] = sum1
-		board = copy.deepcopy(board1)
+		board1 = copy.deepcopy(board)
 
 	maxcol = 0
 	maxvalue = possible_moves[maxcol] 
