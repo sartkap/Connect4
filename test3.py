@@ -116,10 +116,10 @@ def game_play():
 
     
     
-def montecarlomove(board):
+def montecarlomove(board):		##this is the monte carlo function
 	possible_moves = [0] * board_width
 
-	board1 = copy.deepcopy(board)
+	board1 = copy.deepcopy(board)  	#to keep the original state of board
 
 	for evalcol in range(board_width):
 		
@@ -130,13 +130,14 @@ def montecarlomove(board):
 		else:
 			lowestrow = lowest_space(board, evalcol)
 			board[evalcol][lowestrow] = 2
-			board2 = copy.deepcopy(board)
-			if currentmove_win(2 , board, evalcol, lowestrow):  ##
+			#board2 = copy.deepcopy(board)
+			if currentmove_win(2 , board, evalcol, lowestrow):  ##if the comp wins after this move
 				possible_moves[evalcol] = 100000
 				continue
 
 			sum1 = 0
-			board2 = copy.deepcopy(board)
+			board2 = copy.deepcopy(board)	#storing the state of board after one move
+			
 			for games in range(no_of_games):
 				stage = 0
 				
@@ -303,7 +304,7 @@ def human_move(board, first_move):
 
         pygame.display.update()
         clock.tick()
-
+##
 
 def animate_drop_effect(board, col, color):
     pos_x = x_margin + col * element_size
