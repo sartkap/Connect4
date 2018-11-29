@@ -304,7 +304,7 @@ def human_move(board, first_move):
 
         pygame.display.update()
         clock.tick()
-
+##
 
 def animate_drop_effect(board, col, color):
     pos_x = x_margin + col * element_size
